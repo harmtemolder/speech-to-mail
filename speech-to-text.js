@@ -24,16 +24,16 @@ async function convert(fileName, encoding, sampleRate, language, addPunctuation)
 
   // Prepares request object
   const request = {
-    audio: audio,
-    config: config,
+    audio,
+    config,
   };
 
   // Detects speech in the audio file
   const [response] = await client.recognize(request);
   const transcription = response.results
-    .map(result => result.alternatives[0].transcript)
+    .map((result) => result.alternatives[0].transcript)
     .join('\n');
-  return(transcription);
+  return (transcription);
 }
 
 module.exports.convert = convert;

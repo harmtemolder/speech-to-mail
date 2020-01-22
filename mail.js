@@ -5,7 +5,7 @@ and https://github.com/googleapis/google-api-nodejs-client/blob/master/samples/g
 
 const fs = require('fs');
 const {
-  google
+  google,
 } = require('googleapis');
 const readline = require('readline');
 
@@ -15,7 +15,7 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.modify',
   'https://www.googleapis.com/auth/gmail.compose',
   'https://www.googleapis.com/auth/gmail.send',
-]
+];
 
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
@@ -44,11 +44,12 @@ function authorize(credentials, callback) {
   const {
     client_secret,
     client_id,
-    redirect_uris
+    redirect_uris,
   } = credentials.web;
 
   const oAuth2Client = new google.auth.OAuth2(
-    client_id, client_secret, redirect_uris[0]);
+    client_id, client_secret, redirect_uris[0],
+  );
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
@@ -102,8 +103,8 @@ function listLabels(auth) {
   gmail.users.labels.list({
     userId: 'me',
   }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
-    const labels = res.data.labels;
+    if (err) return console.log(`The API returned an error: ${err}`);
+    const { labels } = res.data;
     if (labels.length) {
       console.log('Labels:');
       labels.forEach((label) => {
@@ -124,13 +125,13 @@ async function sendMail(auth, subject, messageBody) {
   // You can use UTF-8 encoding for the subject using the method below.
   // You can also just use a plain string if you don't need anything fancy.
   const messageParts = [
-    'From: Harm te Molder <mail@harmtemolder.nl>',
-    'To: Harm te Molder <mail@harmtemolder.nl>',
+    'From: Harm te Molder <harmtemolder@gmail.com>',
+    'To: Harm te Molder <harmtemolder@gmail.com>',
     'Content-Type: text/html; charset=utf-8',
     'MIME-Version: 1.0',
     `Subject: ${subject}`,
     '',
-    messageBody
+    messageBody,
   ];
   const message = messageParts.join('\n');
 
@@ -155,7 +156,7 @@ async function sendMail(auth, subject, messageBody) {
 if (require.main === module) {
   send(
     'Test mail sent directly from speech-to-mail/mail.js',
-    'See <a href="https://github.com/harmtemolder/speech-to-mail">https://github.com/harmtemolder/speech-to-mail</a> for more info'
+    'See <a href="https://github.com/harmtemolder/speech-to-mail">https://github.com/harmtemolder/speech-to-mail</a> for more info',
   );
 }
 

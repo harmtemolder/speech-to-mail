@@ -4,9 +4,10 @@ const fs = require('fs');
 const path = require('path');
 
 const speechToText = require('./speech-to-text.js');
-// const mail = require('./mail.js');e
+const mail = require('./mail.js');
 
-const defaultDir = '/Users/harmtemolder/stack/Recordings/';
+const defaultDir = '/Users/harmtemolder/STACK/Recordings';
+// const defaultDir = '/Users/harmtemolder/STACK/Inbox/Telefoon/WhatsApp/Media/WhatsApp Voice Notes/202003';
 
 // function convertAndMail(file) {
 //   speechToText.convert(inputFileName).then((convertedText) => {
@@ -31,25 +32,26 @@ function resultsToTable(arrayOfObjects) {
   });
 
   html += '</table>';
-  document.getElementById('box').innerHTML = html;
+
+  return html;
 }
 
-(function batchConvert(dir) {
+(function batchConvert(dir, fileExtension) {
   fs.readdir(dir, (err, files) => {
     if (err) {
-      console.error(`index.js/convertAll: Error reading ${dir}:`, err);
+      console.error(`index.js/batchConvert: Error reading ${dir}:`, err);
       process.exit(1);
     }
 
     const convertResults = [];
 
     // Only keep .flac files
-    const flacFiles = files.filter((file, index) => file.endsWith('.flac') && index < 10); // TODO Remove cap
+    const filteredFiles = files.filter((file, index) => file.endsWith(`.${fileExtension}`));// && index < 10); // TODO Remove cap
 
-    const promises = flacFiles.map((file) => {
+    const promises = filteredFiles.map((file) => {
       const filePath = path.join(dir, file);
 
-      return speechToText.convert(filePath).then((convertedText) => {
+      return speechToText.convert(filePath, undefined, undefined, 'nl-NL', undefined).then((convertedText) => {
         convertResults.push({
           filePath,
           convertedText,
@@ -59,9 +61,11 @@ function resultsToTable(arrayOfObjects) {
 
     Promise.all(promises).then(() => {
       // If all conversions went well, convert the resulting array of objects to a table that can be mailed
-      resultsToTable(convertResults);
+      const resultsTable = resultsToTable(convertResults);
 
-      console.log(convertResults);
+      // And mail those results using Google's Gmail API
+      mail.send('Speech-to-Text', resultsTable);
+      // console.log(resultsTable);
     }).catch(console.error);
   });
-}(defaultDir));
+}(defaultDir, 'flac'));
